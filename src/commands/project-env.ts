@@ -148,12 +148,18 @@ function envPath(projectId: string, name?: string): string {
   return name === undefined ? base : `${base}/${encodeURIComponent(name)}`;
 }
 
-/** Trim + reject an empty environment name; the server owns every other rule. */
+/** Trim + reject empty, path-traversal, or invalid environment names; the server owns every other rule. */
 function requireEnvName(raw: string | undefined, flag: string): string {
   const name = raw?.trim() ?? '';
   if (name.length === 0) {
     throw localValidationError(
       `${flag} is required and must not be empty or whitespace-only`,
+      flag === '--rename' ? 'rename' : undefined,
+    );
+  }
+  if (name === '.' || name === '..') {
+    throw localValidationError(
+      `${flag} cannot be '.' or '..'`,
       flag === '--rename' ? 'rename' : undefined,
     );
   }

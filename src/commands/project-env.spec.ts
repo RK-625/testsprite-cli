@@ -2274,3 +2274,114 @@ describe('environment rename validation compatibility', () => {
     });
   });
 });
+
+describe('environment path traversal validation', () => {
+  it.each(['.', '..'])(
+    'rejects path traversal token %j in runEnvGet before any network call',
+    async invalidName => {
+      const calls: Call[] = [];
+      await expect(
+        runEnvGet(
+          { ...COMMON, projectId: PROJECT_ID, name: invalidName },
+          { fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {}, stderr: () => {} },
+        ),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        exitCode: 5,
+        nextAction: expect.stringContaining("cannot be '.' or '..'"),
+      });
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it.each(['.', '..'])(
+    'rejects path traversal token %j in runEnvDelete even with confirm before any network call',
+    async invalidName => {
+      const calls: Call[] = [];
+      await expect(
+        runEnvDelete(
+          { ...COMMON, projectId: PROJECT_ID, name: invalidName, confirm: true },
+          { fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {}, stderr: () => {} },
+        ),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        exitCode: 5,
+        nextAction: expect.stringContaining("cannot be '.' or '..'"),
+      });
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it.each(['.', '..'])(
+    'rejects path traversal token %j in runEnvUpdate name before any network call',
+    async invalidName => {
+      const calls: Call[] = [];
+      await expect(
+        runEnvUpdate(
+          { ...COMMON, projectId: PROJECT_ID, name: invalidName, url: 'https://example.com' },
+          { fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {}, stderr: () => {} },
+        ),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        exitCode: 5,
+        nextAction: expect.stringContaining("cannot be '.' or '..'"),
+      });
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it.each(['.', '..'])(
+    'rejects path traversal token %j in runEnvUpdate --rename before any network call',
+    async invalidName => {
+      const calls: Call[] = [];
+      await expect(
+        runEnvUpdate(
+          { ...COMMON, projectId: PROJECT_ID, name: 'valid-name', rename: invalidName },
+          { fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {}, stderr: () => {} },
+        ),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        exitCode: 5,
+        nextAction: expect.stringContaining("cannot be '.' or '..'"),
+        details: { field: 'rename' },
+      });
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it.each(['.', '..'])(
+    'rejects path traversal token %j in runEnvSetDefault before any network call',
+    async invalidName => {
+      const calls: Call[] = [];
+      await expect(
+        runEnvSetDefault(
+          { ...COMMON, projectId: PROJECT_ID, name: invalidName },
+          { fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {}, stderr: () => {} },
+        ),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        exitCode: 5,
+        nextAction: expect.stringContaining("cannot be '.' or '..'"),
+      });
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it.each(['.', '..'])(
+    'rejects path traversal token %j in runEnvCreate --name before any network call',
+    async invalidName => {
+      const calls: Call[] = [];
+      await expect(
+        runEnvCreate(
+          { ...COMMON, projectId: PROJECT_ID, name: invalidName, url: 'https://example.com' },
+          { fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {}, stderr: () => {} },
+        ),
+      ).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+        exitCode: 5,
+        nextAction: expect.stringContaining("cannot be '.' or '..'"),
+      });
+      expect(calls).toHaveLength(0);
+    },
+  );
+});
