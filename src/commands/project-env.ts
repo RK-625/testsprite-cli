@@ -163,7 +163,7 @@ function requireEnvName(raw: string | undefined, flag: string): string {
   }
   if (name === '.' || name === '..') {
     throw localValidationError(
-      `${flag} must not be "." or "..": it is not a valid environment name`,
+      `${flag} must not be "." or "..", which would escape the route. Use a descriptive name of 1-100 characters, unique within the project (for example "staging" or "local-dev").`,
       flag === '--rename' ? 'rename' : undefined,
     );
   }
