@@ -1842,6 +1842,18 @@ describe('runEnvDelete', () => {
     expect(calls).toEqual([]);
   });
 
+  it.each(['..', '.'])('refuses the name %s and sends no request', async name => {
+    const { credentialsPath } = makeCreds();
+    const calls: Call[] = [];
+    await expect(
+      runEnvDelete(
+        { ...COMMON, projectId: PROJECT_ID, name, confirm: true },
+        { credentialsPath, fetchImpl: makeFetch(calls, () => ({ body: {} })), stdout: () => {} },
+      ),
+    ).rejects.toMatchObject({ code: 'VALIDATION_ERROR', exitCode: 5 });
+    expect(calls).toEqual([]);
+  });
+
   it('DELETEs /projects/{id}/env/{name} with an idempotency key', async () => {
     const { credentialsPath } = makeCreds();
     const calls: Call[] = [];
